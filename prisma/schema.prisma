@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Tool {
+  id                   String   @id @default(cuid())
+  name                 String   @unique
+  company              String
+  logoEmoji            String   @default("🤖")
+  websiteUrl           String?
+  description          String
+  features             String
+  categories           String
+  automationTags       String
+
+  freePlanAvailable    Boolean  @default(false)
+  freePlanDescription  String?
+  setupCost            String
+  monthlyPricePerUser  Int?
+  monthlyPriceFlat     Int?
+  monthlyPriceLabel    String
+  enterpriseNote       String?
+
+  difficultyScore      Int
+  maintenanceScore     Int
+  requiredSkills       String
+
+  costReductionPct     Int?
+  timeReductionPct     Int?
+  effectDescription    String
+  effectBaseline       String?
+
+  selfSetupNote                String?
+  fullDelegationNote           String?
+  selfMaintenanceNote          String?
+  fullMaintenanceNote          String?
+  selfMaintenanceHoursPerMonth Float?
+  fullMaintenanceCostPerMonth  Int?
+  adminUserNote                String?
+  endUserNote                  String?
+  endUserRequiresLicense       Boolean  @default(false)
+  isIncludedInEnv              String?
+  relatedBaseEnv               String?
+
+  compatibleEnvs       String
+
+  lastUpdated          DateTime @default(now())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model CategoryCache {
+  id          String   @id @default(cuid())
+  categoryId  String   @unique
+  query       String
+  rankedTools String   // JSON: RankedTool[]
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+model UpdateLog {
+  id           String   @id @default(cuid())
+  runAt        DateTime @default(now())
+  status       String
+  toolsUpdated Int      @default(0)
+  details      String?
+}
+
+model ConsultationRequest {
+  id        String   @id @default(cuid())
+  company   String
+  name      String
+  email     String
+  phone     String?
+  content   String
+  createdAt DateTime @default(now())
+}
