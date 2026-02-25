@@ -62,12 +62,13 @@ export async function POST(req: NextRequest) {
     maintenanceCost = outsourceMaintenanceCost;
   }
 
-  // 効果の目安（削減率）による月間削減額
-  const reductionSavings = Math.round(currentMonthlyCost * (tool.timeReductionPct ?? 0) / 100);
+  // 担当者の稼働コスト（削減後）= 現在のコスト × (100% - 時間削減%)
+  const timeReductionPct = tool.timeReductionPct ?? 0;
+  const staffCostAfterReduction = Math.round(currentMonthlyCost * (100 - timeReductionPct) / 100);
 
-  // 導入後コスト合計（ツール費用 - 業務削減効果）
-  const toolMonthlyCost = toolSystemCost + endUserCost + maintenanceCost - reductionSavings;
-  const netMonthlySavings = -toolMonthlyCost; // 純月間節約額（正 = 節約）
+  // 導入後コスト合計（削減後稼働コスト + ツール費用）
+  const toolMonthlyCost = staffCostAfterReduction + toolSystemCost + endUserCost + maintenanceCost;
+  const netMonthlySavings = currentMonthlyCost - toolMonthlyCost;
   const annualSavings = netMonthlySavings * 12;
 
   // 初期費用から回収期間を算出
@@ -95,7 +96,7 @@ export async function POST(req: NextRequest) {
     estimatedUsers: effectiveEstimatedUsers,
     pricePerUser,
     relatedBaseEnv: tool.relatedBaseEnv ?? null,
-    reductionSavings,
+    staffCostAfterReduction,
     timeReductionPct: tool.timeReductionPct ?? null,
   };
 

@@ -13,11 +13,14 @@ const RANK_BADGE: Record<number, { emoji: string; bg: string; text: string }> = 
 
 interface ToolCardProps {
   ranked: RankedTool;
+  showRank?: boolean;
 }
 
-export function ToolCard({ ranked }: ToolCardProps) {
+export function ToolCard({ ranked, showRank = true }: ToolCardProps) {
   const { rank, tool, reasoning, compatibilityNote, matchScore } = ranked;
-  const badge = RANK_BADGE[rank] ?? { emoji: `${rank}位`, bg: "bg-white border-gray-200", text: "text-gray-500" };
+  const badge = showRank
+    ? (RANK_BADGE[rank] ?? { emoji: `${rank}位`, bg: "bg-white border-gray-200", text: "text-gray-500" })
+    : { emoji: null, bg: "bg-white border-gray-200", text: "text-gray-500" };
   const features: string[] = JSON.parse(tool.features);
 
   const [setupPref, setSetupPref] = useState<UserProfile["setupPreference"]>(undefined);
@@ -54,7 +57,7 @@ export function ToolCard({ ranked }: ToolCardProps) {
       {/* ヘッダー */}
       <div className="flex items-start justify-between gap-2 mb-4 flex-wrap">
         <div className="flex items-start gap-3">
-          <div className="text-4xl">{badge.emoji}</div>
+          {badge.emoji && <div className="text-4xl">{badge.emoji}</div>}
           <div>
             <div className="flex items-center gap-2">
               <span className="text-2xl">{tool.logoEmoji}</span>

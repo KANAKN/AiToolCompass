@@ -44,7 +44,7 @@ export interface RoiResult {
   estimatedUsers: number;
   pricePerUser: number | null;
   relatedBaseEnv: string | null;
-  reductionSavings: number;
+  staffCostAfterReduction: number;
   timeReductionPct: number | null;
 }
 

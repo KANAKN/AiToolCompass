@@ -15,6 +15,7 @@ function ResultsContent() {
   const [rankedTools, setRankedTools] = useState<RankedTool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userEnvs, setUserEnvs] = useState<string[]>([]);
 
   const fetchResults = useCallback(async () => {
     if (!query) return;
@@ -29,6 +30,7 @@ function ResultsContent() {
         environments = profile.environments ?? [];
       }
     } catch {}
+    setUserEnvs(environments);
 
     // Claudeが生成したランキング情報のみキャッシュ（ツールデータは含めない）
     type CachedRanking = { toolId: string; rank: number; reasoning: string; compatibilityNote?: string; matchScore: number };
@@ -157,13 +159,41 @@ function ResultsContent() {
         </div>
       )}
 
-      {!isLoading && rankedTools.length > 0 && (
-        <div className="space-y-5">
-          {rankedTools.map((r) => (
-            <ToolCard key={r.tool.id} ranked={r} />
-          ))}
-        </div>
-      )}
+      {!isLoading && rankedTools.length > 0 && (() => {
+        const isRef = (r: RankedTool) => {
+          const isRelatedToUserEnv = !!(
+            (r.tool.isIncludedInEnv && userEnvs.includes(r.tool.isIncludedInEnv)) ||
+            (r.tool.relatedBaseEnv && userEnvs.includes(r.tool.relatedBaseEnv))
+          );
+          const hasEndUserLicenseCost = !isRelatedToUserEnv && r.tool.endUserRequiresLicense;
+          return r.matchScore < 60 || hasEndUserLicenseCost;
+        };
+        const mainTools = rankedTools.filter((r) => !isRef(r));
+        const refTools = rankedTools.filter((r) => isRef(r));
+        return (
+          <>
+            <div className="space-y-5">
+              {mainTools.map((r, i) => (
+                <ToolCard key={r.tool.id} ranked={{ ...r, rank: i + 1 }} />
+              ))}
+            </div>
+            {refTools.length > 0 && (
+              <div className="space-y-3 pt-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 border-t border-gray-200" />
+                  <p className="text-xs text-gray-400 shrink-0">参考情報（適合度が低いため費用対効果が出にくい可能性があります）</p>
+                  <div className="flex-1 border-t border-gray-200" />
+                </div>
+                <div className="space-y-5 opacity-70">
+                  {refTools.map((r) => (
+                    <ToolCard key={r.tool.id} ranked={r} showRank={false} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {!isLoading && rankedTools.length > 0 && (
         <div className="space-y-4 pt-2">

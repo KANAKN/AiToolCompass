@@ -72,10 +72,10 @@ export function RoiSimulator({ toolId, toolName, timeReductionPct, costReduction
 
   // 年間削減額の計算（削減率を反映、preference未設定時は両パターン）
   const inhouseAnnual = result
-    ? Math.round((result.reductionSavings - result.toolSystemCost - result.endUserCost - (result.inhouseMaintenanceCost ?? 0)) * 12)
+    ? Math.round((result.currentMonthlyCost - result.staffCostAfterReduction - result.toolSystemCost - result.endUserCost - (result.inhouseMaintenanceCost ?? 0)) * 12)
     : null;
   const outsourceAnnual = result
-    ? Math.round((result.reductionSavings - result.toolSystemCost - result.endUserCost - (result.outsourceMaintenanceCost ?? 0)) * 12)
+    ? Math.round((result.currentMonthlyCost - result.staffCostAfterReduction - result.toolSystemCost - result.endUserCost - (result.outsourceMaintenanceCost ?? 0)) * 12)
     : null;
 
   return (
@@ -208,11 +208,11 @@ export function RoiSimulator({ toolId, toolName, timeReductionPct, costReduction
                   )}
                 </div>
               )}
-              {/* 業務効率化による削減 */}
-              {result.reductionSavings > 0 && (
+              {/* 担当者の稼働コスト（削減後） */}
+              {result.timeReductionPct != null && (
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-green-700">業務効率化による削減（{result.timeReductionPct}%）</span>
-                  <span className="font-medium text-green-700">−{formatJpy(result.reductionSavings)}</span>
+                  <span className="text-green-700">担当者の稼働コスト（現在から{result.timeReductionPct}%削減）</span>
+                  <span className="font-medium text-green-700">{formatJpy(result.staffCostAfterReduction)}</span>
                 </div>
               )}
               <div className="space-y-1">
@@ -267,11 +267,16 @@ export function RoiSimulator({ toolId, toolName, timeReductionPct, costReduction
             </div>
 
             {/* 年間削減額 */}
-            <div className="bg-green-50 border border-green-100 rounded-lg p-3">
-              <p className="text-xs text-gray-500 mb-1">年間削減額（導入費用別途）</p>
+            <div className="bg-green-50 border border-green-100 rounded-lg p-3 text-center">
               {maintenancePreference ? (
                 <>
-                  <p className="text-2xl font-bold text-green-600">{formatJpy(result.annualSavings)}</p>
+                  <p className="text-xs text-gray-500">
+                    （{formatJpy(result.currentMonthlyCost)} − {formatJpy(result.toolMonthlyCost)} = {formatJpy(result.netMonthlySavings)}） × 12ヶ月
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2 mb-0.5">年間削減額（導入費用別途）</p>
+                  <p className={`text-2xl font-bold ${result.annualSavings > 0 ? "text-green-600" : "text-red-500"}`}>
+                    {formatJpy(result.annualSavings)}
+                  </p>
                   {result.annualSavings <= 0 && (
                     <p className="text-xs text-amber-600 mt-1">
                       ⚠️ 現在の設定ではコストメリットが出にくい状況です。チーム規模や作業時間を見直してください。
@@ -279,20 +284,26 @@ export function RoiSimulator({ toolId, toolName, timeReductionPct, costReduction
                   )}
                 </>
               ) : (
-                <div className="space-y-0.5">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-600">社内で行う場合</span>
-                    <span className={`text-xl font-bold ${(inhouseAnnual ?? 0) > 0 ? "text-green-600" : "text-red-500"}`}>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-xs text-gray-500">社内で行う場合</p>
+                    <p className="text-xs text-gray-400">
+                      （{formatJpy(result.currentMonthlyCost)} − {formatJpy(result.currentMonthlyCost - Math.round((inhouseAnnual ?? 0) / 12))} = {formatJpy(Math.round((inhouseAnnual ?? 0) / 12))}） × 12ヶ月
+                    </p>
+                    <p className={`text-xl font-bold ${(inhouseAnnual ?? 0) > 0 ? "text-green-600" : "text-red-500"}`}>
                       {formatJpy(inhouseAnnual ?? 0)}
-                    </span>
+                    </p>
                   </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-600">外部委託の場合</span>
-                    <span className={`text-xl font-bold ${(outsourceAnnual ?? 0) > 0 ? "text-green-600" : "text-red-500"}`}>
+                  <div>
+                    <p className="text-xs text-gray-500">外部委託の場合</p>
+                    <p className="text-xs text-gray-400">
+                      （{formatJpy(result.currentMonthlyCost)} − {formatJpy(result.currentMonthlyCost - Math.round((outsourceAnnual ?? 0) / 12))} = {formatJpy(Math.round((outsourceAnnual ?? 0) / 12))}） × 12ヶ月
+                    </p>
+                    <p className={`text-xl font-bold ${(outsourceAnnual ?? 0) > 0 ? "text-green-600" : "text-red-500"}`}>
                       {formatJpy(outsourceAnnual ?? 0)}
-                    </span>
+                    </p>
                   </div>
-                  <p className="text-xs text-indigo-600 mt-1">
+                  <p className="text-xs text-indigo-600">
                     💡 <a href="/profile" className="underline">自社環境設定</a>でメンテナンス方針を登録すると、いずれかの数値が★表示されます
                   </p>
                 </div>
