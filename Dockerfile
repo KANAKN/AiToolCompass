@@ -20,4 +20,7 @@ ENV NODE_ENV=production
 
 EXPOSE 3000
 
-CMD npx prisma migrate deploy --schema /app/prisma/schema.prisma && node .next/standalone/server.js
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+CMD ["/app/start.sh"]
