@@ -72,7 +72,7 @@ export const CATEGORIES = [
   },
   {
     id: "sns",
-    label: "SNS原稿を自動生成したい",
+    label: "SNS原稿を生成して一括投稿したい",
     icon: "📱",
     description: "Instagram・X・LinkedInなどの投稿文を自動生成",
     summary: "SNS投稿の自動生成・管理は、複数チャンネルの一元管理と投稿予約まで対応できるBufferが費用・導入ハードルともに低く始めやすいです。ブランドトーンを学習させた高品質なコンテンツ量産にはJasper AIが適しており、市場トレンドや競合情報を取り込んだ記事・投稿文の生成にはGensparkが有効です。",
