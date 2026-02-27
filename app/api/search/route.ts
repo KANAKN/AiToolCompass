@@ -18,11 +18,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "クエリが必要です" }, { status: 400 });
   }
 
-  // 定番カテゴリかつ環境指定なし → キャッシュを返す
+  // 定番カテゴリ → 環境設定の有無に関わらずキャッシュを返す（環境別表示はクライアント側で処理）
   const isPredefinedCategory = category && CATEGORIES.some((c) => c.id === category);
   const hasEnvFilter = environments && environments.length > 0;
 
-  if (isPredefinedCategory && !hasEnvFilter) {
+  if (isPredefinedCategory) {
     const cached = await prisma.categoryCache.findUnique({
       where: { categoryId: category },
     });
@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
     const response = await stream.finalMessage();
     const rankedTools = parseRankedTools(response, allTools);
 
-    // 定番カテゴリで環境なしの場合はキャッシュに保存
-    if (isPredefinedCategory && !hasEnvFilter) {
+    // 定番カテゴリの場合はキャッシュに保存
+    if (isPredefinedCategory) {
       await prisma.categoryCache.upsert({
         where: { categoryId: category! },
         update: { query, rankedTools: JSON.stringify(rankedTools) },
