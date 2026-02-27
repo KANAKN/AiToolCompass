@@ -255,11 +255,11 @@ export function RoiSimulator({ toolId, toolName, timeReductionPct, costReduction
                   <>
                     <div className="flex justify-between items-center text-sm font-medium text-gray-700">
                       <span>合計（社内）</span>
-                      <span>{formatJpy(result.toolSystemCost + result.endUserCost + (result.inhouseMaintenanceCost ?? 0) - result.reductionSavings)}</span>
+                      <span>{formatJpy(result.staffCostAfterReduction + result.toolSystemCost + result.endUserCost + (result.inhouseMaintenanceCost ?? 0))}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm font-medium text-gray-500">
                       <span>合計（外部委託）</span>
-                      <span>{formatJpy(result.toolSystemCost + result.endUserCost + (result.outsourceMaintenanceCost ?? 0) - result.reductionSavings)}</span>
+                      <span>{formatJpy(result.staffCostAfterReduction + result.toolSystemCost + result.endUserCost + (result.outsourceMaintenanceCost ?? 0))}</span>
                     </div>
                   </>
                 )}
